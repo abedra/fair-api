@@ -1,14 +1,20 @@
-use crate::types::{ScenarioResult, Scenario};
+use crate::types::{ScenarioResult, Scenario, Error};
 use rand_distr::{Pert, Distribution};
 use std::borrow::BorrowMut;
+use either::Either;
+use either::Either::{Right, Left};
 
-pub fn model_scenario(scenario: &Scenario) -> ScenarioResult {
+pub fn model_scenario(scenario: &Scenario) -> Either<Error, ScenarioResult> {
+    if scenario.sample_size < 100 {
+        return Left(Error{ error: String::from("Sample size too small")});
+    }
+
     let vulnerability = calculate_vulnerability(scenario);
     let loss_event_frequency = loss_event_frequency(vulnerability, scenario.threat_event_frequency);
     let probable_loss = loss_expectancy(scenario.probable_loss_magnitude, loss_event_frequency);
     let worst_case_loss = loss_expectancy(scenario.worst_case_loss_magnitude, loss_event_frequency);
 
-    return ScenarioResult { scenario: scenario.clone(), probable_loss, worst_case_loss };
+    return Right(ScenarioResult { scenario: scenario.clone(), probable_loss, worst_case_loss });
 }
 
 fn calculate_vulnerability(scenario: &Scenario) -> f32 {
@@ -45,4 +51,27 @@ fn loss_expectancy(loss_magnitude: f32, loss_event_frequency: f32) -> f32 {
 
 fn loss_event_frequency(vulnerability: f32, threat_event_frequency: f32) -> f32 {
     return vulnerability * threat_event_frequency;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::{ControlStrength, ThreatCapability, Error};
+
+    #[test]
+    fn invalid_scenario_size() {
+        let scenario = Scenario {
+            name: String::from("Test Scenario"),
+            sample_size: 0,
+            threat_event_frequency: 0.25,
+            probable_loss_magnitude: 1000.,
+            worst_case_loss_magnitude: 10000.,
+            control_strength: ControlStrength { min: 0., max: 100., most_likely: 50. },
+            threat_capability: ThreatCapability { min: 0., max: 100., most_likely: 50. }
+        };
+
+        let expected = Error { error: String::from("Sample size too small") };
+
+        assert_eq!(expected, model_scenario(&scenario).unwrap_left());
+    }
 }

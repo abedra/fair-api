@@ -6,21 +6,21 @@ pub struct Heartbeat {
     pub version: String
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ControlStrength {
     pub min: f32,
     pub max: f32,
     pub most_likely: f32,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ThreatCapability {
     pub min: f32,
     pub max: f32,
     pub most_likely: f32,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Scenario {
     pub name: String,
     pub sample_size: i32,
@@ -31,9 +31,14 @@ pub struct Scenario {
     pub threat_capability: ThreatCapability,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ScenarioResult {
     pub scenario: Scenario,
     pub probable_loss: f32,
     pub worst_case_loss: f32
+}
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+pub struct Error {
+    pub error: String
 }

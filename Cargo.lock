@@ -543,6 +543,7 @@ name = "fair-api"
 version = "0.1.0"
 dependencies = [
  "actix-web",
+ "either",
  "rand",
  "rand_distr",
  "serde",
