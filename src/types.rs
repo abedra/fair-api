@@ -1,5 +1,11 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize)]
+pub struct Heartbeat {
+    pub status: String,
+    pub version: String
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ControlStrength {
     pub min: f32,
