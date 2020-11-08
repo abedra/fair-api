@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use either::Either::{Left, Right};
+use either::Either;
 
 #[derive(Serialize, Deserialize)]
 pub struct Heartbeat {
@@ -29,6 +31,24 @@ pub struct Scenario {
     pub worst_case_loss_magnitude: f32,
     pub control_strength: ControlStrength,
     pub threat_capability: ThreatCapability,
+}
+
+impl Scenario {
+    pub fn is_valid(&self) -> Either<Error, ()> {
+        if self.sample_size < 100 {
+            return Left(Error{ error: String::from("Sample size too small")});
+        }
+
+        if self.control_strength.max <= 0. {
+            return Left(Error{ error: String::from("Control strength max must be greater than 0")});
+        }
+
+        if self.threat_capability.max <= 0. {
+            return Left(Error{ error: String::from("Threat capability max must be greater than 0")});
+        }
+
+        Right(())
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

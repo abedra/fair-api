@@ -5,16 +5,17 @@ use either::Either;
 use either::Either::{Right, Left};
 
 pub fn model_scenario(scenario: &Scenario) -> Either<Error, ScenarioResult> {
-    if scenario.sample_size < 100 {
-        return Left(Error{ error: String::from("Sample size too small")});
+    return match scenario.is_valid() {
+        Either::Left(error) => Left(error),
+        Either::Right(_) => {
+            let vulnerability = calculate_vulnerability(scenario);
+            let loss_event_frequency = loss_event_frequency(vulnerability, scenario.threat_event_frequency);
+            let probable_loss = loss_expectancy(scenario.probable_loss_magnitude, loss_event_frequency);
+            let worst_case_loss = loss_expectancy(scenario.worst_case_loss_magnitude, loss_event_frequency);
+
+            Right(ScenarioResult { scenario: scenario.clone(), probable_loss, worst_case_loss })
+        }
     }
-
-    let vulnerability = calculate_vulnerability(scenario);
-    let loss_event_frequency = loss_event_frequency(vulnerability, scenario.threat_event_frequency);
-    let probable_loss = loss_expectancy(scenario.probable_loss_magnitude, loss_event_frequency);
-    let worst_case_loss = loss_expectancy(scenario.worst_case_loss_magnitude, loss_event_frequency);
-
-    return Right(ScenarioResult { scenario: scenario.clone(), probable_loss, worst_case_loss });
 }
 
 fn calculate_vulnerability(scenario: &Scenario) -> f32 {
@@ -71,6 +72,40 @@ mod tests {
         };
 
         let expected = Error { error: String::from("Sample size too small") };
+
+        assert_eq!(expected, model_scenario(&scenario).unwrap_left());
+    }
+
+    #[test]
+    fn invalid_control_strength() {
+        let scenario = Scenario {
+            name: String::from("Test Scenario"),
+            sample_size: 100,
+            threat_event_frequency: 0.25,
+            probable_loss_magnitude: 1000.,
+            worst_case_loss_magnitude: 10000.,
+            control_strength: ControlStrength { min: 0., max: 0., most_likely: 0. },
+            threat_capability: ThreatCapability { min: 0., max: 100., most_likely: 50. }
+        };
+
+        let expected = Error { error: String::from("Control strength max must be greater than 0") };
+
+        assert_eq!(expected, model_scenario(&scenario).unwrap_left());
+    }
+
+    #[test]
+    fn invalid_threat_capability() {
+        let scenario = Scenario {
+            name: String::from("Test Scenario"),
+            sample_size: 100,
+            threat_event_frequency: 0.25,
+            probable_loss_magnitude: 1000.,
+            worst_case_loss_magnitude: 10000.,
+            control_strength: ControlStrength { min: 0., max: 100., most_likely: 50. },
+            threat_capability: ThreatCapability { min: 0., max: 0., most_likely: 0. }
+        };
+
+        let expected = Error { error: String::from("Threat capability max must be greater than 0") };
 
         assert_eq!(expected, model_scenario(&scenario).unwrap_left());
     }
