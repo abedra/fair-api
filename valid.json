@@ -1,0 +1,17 @@
+{
+  "name" : "Test Scenario",
+  "sample_size" : 100000,
+  "threat_event_frequency" : 0.25,
+  "probable_loss_magnitude" : 100000,
+  "worst_case_loss_magnitude" : 1000000,
+  "control_strength" : {
+    "min" : 0,
+    "max" : 100,
+    "most_likely" : 50
+  },
+  "threat_capability" : {
+    "min" : 0,
+    "max" : 100,
+    "most_likely" : 50
+  }
+}
