@@ -71,7 +71,7 @@ mod tests {
             threat_capability: ThreatCapability { min: 0., max: 100., most_likely: 50. }
         };
 
-        let expected = Error { error: String::from("Sample size too small") };
+        let expected = Error { error: String::from("Sample size must be 100 or greater") };
 
         assert_eq!(expected, model_scenario(&scenario).unwrap_left());
     }
@@ -106,6 +106,23 @@ mod tests {
         };
 
         let expected = Error { error: String::from("Threat capability max must be greater than 0") };
+
+        assert_eq!(expected, model_scenario(&scenario).unwrap_left());
+    }
+
+    #[test]
+    fn invalid_threat_event_frequency() {
+        let scenario = Scenario {
+            name: String::from("Test Scenario"),
+            sample_size: 100,
+            threat_event_frequency: -0.25,
+            probable_loss_magnitude: 1000.,
+            worst_case_loss_magnitude: 10000.,
+            control_strength: ControlStrength { min: 0., max: 100., most_likely: 50. },
+            threat_capability: ThreatCapability { min: 0., max: 100., most_likely: 50. }
+        };
+
+        let expected = Error { error: String::from("Threat event frequency must be greater than 0") };
 
         assert_eq!(expected, model_scenario(&scenario).unwrap_left());
     }
