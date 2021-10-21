@@ -1,7 +1,7 @@
 use actix_web::{web, post, Responder, HttpResponse};
-use crate::types::Scenario;
-use crate::scenario::model::model_scenario;
+use crate::scenario::fair::model_scenario;
 use either::Either;
+use crate::scenario::model::Scenario;
 
 #[post("/")]
 async fn model(item: web::Json<Scenario>) -> impl Responder {
