@@ -1,19 +1,17 @@
 use crate::types::{ScenarioResult, Scenario, Error};
 use rand_distr::{Pert, Distribution};
 use std::borrow::BorrowMut;
-use either::Either;
-use either::Either::{Right, Left};
 
-pub fn model_scenario(scenario: &Scenario) -> Either<Error, ScenarioResult> {
+pub fn model_scenario(scenario: &Scenario) -> Result<ScenarioResult, Error> {
     return match scenario.is_valid() {
-        Either::Left(error) => Left(error),
-        Either::Right(_) => {
+        Err(error) => Err(error),
+        Ok(_) => {
             let vulnerability = calculate_vulnerability(scenario);
             let loss_event_frequency = loss_event_frequency(vulnerability, scenario.threat_event_frequency);
             let probable_loss = loss_expectancy(scenario.probable_loss_magnitude, loss_event_frequency);
             let worst_case_loss = loss_expectancy(scenario.worst_case_loss_magnitude, loss_event_frequency);
 
-            Right(ScenarioResult { scenario: scenario.clone(), probable_loss, worst_case_loss })
+            Ok(ScenarioResult { scenario: scenario.clone(), probable_loss, worst_case_loss })
         }
     }
 }
@@ -73,7 +71,7 @@ mod tests {
 
         let expected = Error { error: String::from("Sample size must be 100 or greater") };
 
-        assert_eq!(expected, model_scenario(&scenario).unwrap_left());
+        assert_eq!(expected, model_scenario(&scenario).unwrap_err());
     }
 
     #[test]
@@ -90,7 +88,7 @@ mod tests {
 
         let expected = Error { error: String::from("Control strength max must be greater than 0") };
 
-        assert_eq!(expected, model_scenario(&scenario).unwrap_left());
+        assert_eq!(expected, model_scenario(&scenario).unwrap_err());
     }
 
     #[test]
@@ -107,7 +105,7 @@ mod tests {
 
         let expected = Error { error: String::from("Threat capability max must be greater than 0") };
 
-        assert_eq!(expected, model_scenario(&scenario).unwrap_left());
+        assert_eq!(expected, model_scenario(&scenario).unwrap_err());
     }
 
     #[test]
@@ -124,6 +122,6 @@ mod tests {
 
         let expected = Error { error: String::from("Threat event frequency must be greater than 0") };
 
-        assert_eq!(expected, model_scenario(&scenario).unwrap_left());
+        assert_eq!(expected, model_scenario(&scenario).unwrap_err());
     }
 }

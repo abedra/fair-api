@@ -5,9 +5,8 @@ authors = ["Aaron Bedra <aaron@aaronbedra.com>"]
 edition = "2018"
 
 [dependencies]
-actix-web = "3.1.0"
+actix-web = "4.0.1"
 serde = { version= " 1.0.117", features = ["derive"] }
-serde_json = "1.0.59"
-rand = "0.7.3"
-rand_distr = "0.3.0"
-either = "1.6.1"
+serde_json = "1.0.79"
+rand = "0.8.5"
+rand_distr = "0.4.3"
